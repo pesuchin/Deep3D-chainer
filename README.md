@@ -5,7 +5,9 @@ Overview
 
 ## Description
 This is Deep3D for chainer. But this implementation is not fixed.
-The paper of this wonderful model is below.
+
+The paper of this wonderful model is below:
+
 Deep3D: Fully Automatic 2D-to-3D Video Conversion with Deep Convolutional Neural Networks(https://arxiv.org/abs/1604.03650)
 
 - [ ] Model implementation
