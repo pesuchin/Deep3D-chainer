@@ -19,29 +19,17 @@ def select(masks, left_image, left_shift=16):
 
     _, H, W, S = masks.shape
     padded = F.pad(left_image, [[0,0],[0,0],[0,0],[left_shift, left_shift]], mode='constant')
-    # pred = Variable(np.zeros(left_image.shape))
-
+    
     for s in np.arange(S):
         mask_slice = masks[:, :, :, s]
+        mask_slice = F.expand_dims(mask_slice, axis=1)
         pad_slice = F.get_item(padded, (slice(None), slice(None), slice(0, H), slice(s, W+s)))
         if s == 0:
-            pred = F.scale(mask_slice, pad_slice, axis=0)
-            # slices = F.expand_dims(F.get_item(padded, (slice(None), slice(None), slice(0, H), slice(s, W+s))), axis=4)
+            pred = F.expand_dims(F.scale(pad_slice, mask_slice, axis=0), axis=4)
         else:
-            # tmp = F.expand_dims(F.get_item(padded, (slice(None), slice(None), slice(0, H), slice(s, W+s))), axis=4)
-            # slices = F.concat([slices, tmp], axis=4)
-            tmp = F.scale(mask_slice, pad_slice, axis=0)
+            tmp = F.expand_dims(F.scale(pad_slice, mask_slice, axis=0), axis=4)
             pred = F.concat([pred, tmp], axis=4)
-
-    # masks = F.expand_dims(masks, axis=1)
-    # disparity_image = F.scale(slices, masks, axis=0)
-    # disparity_image = F.matmul(slices, masks)
-    return F.sum(pred, axis=4)
-    
-    #for s in np.arange(S):
-    #    pred += F.scale(F.get_item(padded, (slice(None), slice(None), slice(0, H), slice(s, W+s))), masks[:, :, :, s], axis=1)
-    # return pred
-    
+    return F.sum(pred, axis=4)    
 
 # 参考: 
 # https://github.com/piiswrong/deep3d/blob/e9433221662001717cfafe89c5f8a7e3b26fe1ee/sym.py
@@ -145,7 +133,7 @@ class Deep3D(chainer.Chain):
         
         # Add + Mask + Selection
         mask = F.softmax(up_conv)
-        mask = F.reshape(mask, [self.batchsize, self.size[1], self.size[0], 33])
+        mask = F.transpose(mask, (0, 2, 3, 1))
         return mask
 
 
