@@ -4,7 +4,7 @@ Deep3D for chainer
 Overview
 
 ## Description
-This is Deep3D for chainer. But this implementation is not fixed.
+This is Deep3D for chainer. But This implementation has not been completed yet.
 
 The paper of this wonderful model is below:
 
