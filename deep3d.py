@@ -6,32 +6,31 @@ from chainer import cuda, optimizers, serializers, Variable
 import math
 import six
 from chainer.links.caffe.protobuf3 import caffe_pb2 as caffe_pb
+import cupy as cp
 
 
 def select(masks, left_image, left_shift=16):
     '''
     assumes inputs:
         masks, shape N, H, W, S
-        left_image, shape N, H, W, C
+        left_image, shape N, C, H, W
     returns
-        right_image, shape N, H, W, C
+        right_image, shape N, C, H, W
     '''
 
     _, H, W, S = masks.shape
     padded = F.pad(left_image, [[0,0],[0,0],[0,0],[left_shift, left_shift]], mode='constant')
-    
+    b, ch, h, w = left_image.shape
+    pred = cp.zeros((b, ch, h, w), dtype=np.float32)
     for s in np.arange(S):
+        pad_slice = F.get_item(padded, (slice(None), slice(None), slice(0, H), slice(s, W+s)))
         mask_slice = masks[:, :, :, s]
         mask_slice = F.expand_dims(mask_slice, axis=1)
-        pad_slice = F.get_item(padded, (slice(None), slice(None), slice(0, H), slice(s, W+s)))
-        if s == 0:
-            pred = F.expand_dims(F.scale(pad_slice, mask_slice, axis=0), axis=4)
-        else:
-            tmp = F.expand_dims(F.scale(pad_slice, mask_slice, axis=0), axis=4)
-            pred = F.concat([pred, tmp], axis=4)
-    return F.sum(pred, axis=4)    
+        slided = F.broadcast_to(mask_slice, (b, ch, h, w)) * pad_slice
+        pred = slided + pred
+    return pred
 
-# 参考: 
+# reference: 
 # https://github.com/piiswrong/deep3d/blob/e9433221662001717cfafe89c5f8a7e3b26fe1ee/sym.py
 # https://github.com/JustinTTL/Deep3D_TF/blob/master/Deep3D_Final.py
 class Deep3D(chainer.Chain):
