@@ -18,6 +18,9 @@ Deep3D: Fully Automatic 2D-to-3D Video Conversion with Deep Convolutional Neural
 - [ ] Upload pre-trained Deep3D model for further experiment
 - [ ] Prepare the Demo
 
+This is the implementation presented below: 
+https://pesuchin.hatenablog.com/entry/2019/02/03/202434
+
 ## Demo
 pass
 
